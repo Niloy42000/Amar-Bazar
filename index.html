@@ -43,12 +43,12 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.g
 
 /* Firebase Console থেকে নিজের config বসান। README.txt দেখুন। */
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY",
-  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
-  projectId: "PASTE_YOUR_PROJECT_ID",
-  storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
-  messagingSenderId: "PASTE_YOUR_SENDER_ID",
-  appId: "PASTE_YOUR_APP_ID"
+  apiKey: "AIzaSyA5uflhcyWt6Ju0w53pJNNt9AVU7IbXO_k",
+  authDomain: "amar-bazar-b10a5.firebaseapp.com",
+  projectId: "amar-bazar-b10a5",
+  storageBucket: "amar-bazar-b10a5.firebasestorage.app",
+  messagingSenderId: "809899456085",
+  appId: "1:809899456085:web:97da68543e30599926c6dc"
 };
 const configured = !Object.values(firebaseConfig).some(v=>v.startsWith("PASTE_"));
 let db=null;
