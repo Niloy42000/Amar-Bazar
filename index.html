@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16834a"><title>Amar Bazar</title>
+<style>
+:root{--g:#16834a;--d:#0d6035;--p:#eef8f0;--t:#18231d;--m:#6c7a71;--l:#e5ece7}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#f6f8f6;color:var(--t)}
+header{background:linear-gradient(135deg,var(--g),var(--d));color:white;padding:20px 16px;border-radius:0 0 24px 24px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}.brand{font-size:24px;font-weight:800}.tag{font-size:12px;opacity:.9}.loc{font-size:12px;background:#ffffff20;padding:8px;border-radius:10px}
+.search{display:flex;gap:8px;margin-top:16px}.search input{min-width:0;flex:1;border:0;border-radius:12px;padding:13px;font-size:15px}.search button,.add,.orderbtn{border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer}.search button{background:#ffb347}
+main{max-width:850px;margin:auto;padding:16px}.hero{background:#fff3d9;border-radius:18px;padding:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.hero h2{margin:0 0 5px;font-size:20px}.hero p{margin:0;color:#705b37;font-size:13px}.hero span{font-size:44px}
+h2{font-size:18px}.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.cat{background:#fff;border:1px solid var(--l);border-radius:14px;padding:11px 2px;font-size:12px}.cat span{display:block;font-size:24px;margin-bottom:4px}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.product{background:white;border:1px solid var(--l);border-radius:16px;overflow:hidden}.photo{height:100px;background:var(--p);display:grid;place-items:center;font-size:44px}.details{padding:10px}.details h3{font-size:15px;margin:0 0 4px}.unit{font-size:12px;color:var(--m)}.pr{display:flex;justify-content:space-between;align-items:center;gap:4px;margin-top:10px}.price{font-weight:800;color:var(--d)}.add{background:var(--g);color:white;padding:8px}
+.cartbar{position:sticky;bottom:10px;margin:20px 0 8px;background:#123d28;color:white;border-radius:16px;padding:13px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 5px 20px #0002}.orderbtn{background:#ffb347}
+footer{text-align:center;color:var(--m);font-size:12px;padding:15px 0 28px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:5;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{background:white;width:100%;max-width:600px;max-height:94vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px}.head{display:flex;justify-content:space-between;align-items:center}.head h2{margin:0}.close{border:0;border-radius:8px;padding:8px}.row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--l);padding:10px 0}.qty button{border:0;border-radius:7px;padding:5px 9px;background:var(--p)}form input,form textarea,form select{width:100%;padding:12px;border:1px solid #dbe5de;border-radius:10px;font:inherit;margin:5px 0}.submit{width:100%;border:0;background:var(--g);color:white;font-weight:800;padding:14px;border-radius:12px;margin-top:8px;font-size:16px}.notice{background:#eff8f1;border-radius:10px;padding:10px;font-size:12px;color:#315d41;margin:10px 0}
+@media(min-width:600px){.products{grid-template-columns:repeat(3,minmax(0,1fr))}.photo{height:125px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div><div class="brand">🛒 Amar Bazar</div><div class="tag">আপনার নিত্যপ্রয়োজনীয় বাজার, ঘরে বসেই</div></div><div class="loc">📍 মুন্সীগঞ্জ</div></div>
+<div class="search"><input id="search" placeholder="পণ্য খুঁজুন..."><button onclick="render()">খুঁজুন</button></div></header>
+<main>
+<section class="hero"><div><h2>বাজার এখন হাতের মুঠোয়!</h2><p>পণ্য বেছে নিন, অর্ডার করুন সহজে।</p></div><span>🛍️</span></section>
+<h2>ক্যাটাগরি</h2><div class="categories">
+<button class="cat" onclick="setCat('সব')"><span>🛒</span>সব পণ্য</button><button class="cat" onclick="setCat('মুদি')"><span>🍚</span>মুদি পণ্য</button><button class="cat" onclick="setCat('সবজি')"><span>🥬</span>সবজি ও ফল</button><button class="cat" onclick="setCat('দৈনন্দিন')"><span>🧴</span>দৈনন্দিন</button>
+</div>
+<h2>জনপ্রিয় পণ্য <small style="font-size:12px;color:#6c7a71">· নমুনা দাম</small></h2><div id="products" class="products"></div>
+<div class="cartbar"><div><strong>🛒 আপনার কার্ট</strong><div id="summary" style="font-size:12px;margin-top:3px">০টি পণ্য · ৳০</div></div><button class="orderbtn" onclick="openCart()">অর্ডার করুন →</button></div>
+<footer>Amar Bazar · মুন্সীগঞ্জ, বাংলাদেশ<br>দামগুলো নমুনা—বাস্তব বিক্রির আগে আপডেট করুন।</footer>
+</main>
+<div class="modal" id="modal" onclick="if(event.target===this)closeCart()"><div class="sheet">
+<div class="head"><h2>আপনার অর্ডার</h2><button class="close" onclick="closeCart()">বন্ধ করুন ✕</button></div><div id="cartItems"></div>
+<div class="notice">পেমেন্ট: ক্যাশ অন ডেলিভারি। অর্ডার জমা দিতে ইন্টারনেট সংযোগ প্রয়োজন।</div>
+<form id="orderForm"><input id="customer" required placeholder="আপনার নাম"><input id="phone" required inputmode="tel" placeholder="মোবাইল নম্বর"><textarea id="address" required rows="2" placeholder="সম্পূর্ণ ডেলিভারি ঠিকানা"></textarea>
+<select id="area"><option>মুন্সীগঞ্জ সদর</option><option>সিরাজদিখান</option><option>টঙ্গিবাড়ী</option><option>শ্রীনগর</option><option>লৌহজং</option><option>গজারিয়া</option><option>অন্যান্য</option></select>
+<textarea id="notes" rows="2" placeholder="অতিরিক্ত নির্দেশনা (ঐচ্ছিক)"></textarea><button class="submit" type="submit">অর্ডার জমা দিন</button></form><div id="result"></div>
+</div></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+/* Firebase Console থেকে নিজের config বসান। README.txt দেখুন। */
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+const configured = !Object.values(firebaseConfig).some(v=>v.startsWith("PASTE_"));
+let db=null;
+if(configured){const app=initializeApp(firebaseConfig);db=getFirestore(app);}
+const products=[
+{id:1,name:'চাল',unit:'১ কেজি',price:70,emoji:'🍚',cat:'মুদি'},
+{id:2,name:'মসুর ডাল',unit:'১ কেজি',price:120,emoji:'🫘',cat:'মুদি'},
+{id:3,name:'সয়াবিন তেল',unit:'১ লিটার',price:175,emoji:'🫗',cat:'মুদি'},
+{id:4,name:'আটা',unit:'১ কেজি',price:55,emoji:'🌾',cat:'মুদি'},
+{id:5,name:'চিনি',unit:'১ কেজি',price:130,emoji:'🧂',cat:'মুদি'},
+{id:6,name:'আলু',unit:'১ কেজি',price:35,emoji:'🥔',cat:'সবজি'},
+{id:7,name:'পেঁয়াজ',unit:'১ কেজি',price:60,emoji:'🧅',cat:'সবজি'},
+{id:8,name:'কলা',unit:'১ ডজন',price:90,emoji:'🍌',cat:'সবজি'},
+{id:9,name:'টমেটো',unit:'১ কেজি',price:50,emoji:'🍅',cat:'সবজি'},
+{id:10,name:'সাবান',unit:'১টি',price:45,emoji:'🧼',cat:'দৈনন্দিন'},
+{id:11,name:'টুথপেস্ট',unit:'১টি',price:100,emoji:'🪥',cat:'দৈনন্দিন'},
+{id:12,name:'শ্যাম্পু',unit:'১ প্যাকেট',price:10,emoji:'🧴',cat:'দৈনন্দিন'}
+];
+let cart={},category='সব';const money=n=>'৳'+n.toLocaleString('bn-BD');
+window.render=function(){const q=document.getElementById('search').value.trim().toLowerCase();const list=products.filter(p=>(category==='সব'||p.cat===category)&&p.name.toLowerCase().includes(q));document.getElementById('products').innerHTML=list.map(p=>`<article class="product"><div class="photo">${p.emoji}</div><div class="details"><h3>${p.name}</h3><div class="unit">${p.unit}</div><div class="pr"><span class="price">${money(p.price)}</span><button class="add" onclick="add(${p.id})">+ যোগ</button></div></div></article>`).join('')||'<p>কোনো পণ্য পাওয়া যায়নি।</p>';};
+window.setCat=function(c){category=c;render()};window.add=function(id){cart[id]=(cart[id]||0)+1;updateCart()};
+function updateCart(){const count=Object.values(cart).reduce((a,b)=>a+b,0),total=products.reduce((s,p)=>s+p.price*(cart[p.id]||0),0);document.getElementById('summary').textContent=`${count.toLocaleString('bn-BD')}টি পণ্য · ${money(total)}`;}
+window.openCart=function(){document.getElementById('modal').classList.add('show');document.getElementById('result').innerHTML='';const chosen=products.filter(p=>cart[p.id]);document.getElementById('cartItems').innerHTML=chosen.length?chosen.map(p=>`<div class="row"><div><strong>${p.name}</strong><div class="unit">${money(p.price)} × ${cart[p.id]}</div></div><div class="qty"><button onclick="changeQty(${p.id},-1)">−</button> ${cart[p.id]} <button onclick="changeQty(${p.id},1)">+</button></div></div>`).join('')+`<p><strong>মোট: ${money(chosen.reduce((s,p)=>s+p.price*cart[p.id],0))}</strong></p>`:'<p>আপনার কার্ট খালি। আগে পণ্য যোগ করুন।</p>';};
+window.changeQty=function(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];updateCart();openCart()};
+window.closeCart=function(){document.getElementById('modal').classList.remove('show')};
+document.getElementById('orderForm').addEventListener('submit',async e=>{e.preventDefault();const chosen=products.filter(p=>cart[p.id]);if(!chosen.length){document.getElementById('result').innerHTML='<div class="notice">আগে কার্টে পণ্য যোগ করুন।</div>';return;}
+if(!db){document.getElementById('result').innerHTML='<div class="notice">Firebase এখনো সেটআপ করা হয়নি। README.txt-এর ধাপ অনুসরণ করে Firebase config বসান, তারপর অর্ডার জমা হবে।</div>';return;}
+const items=chosen.map(p=>({productId:p.id,name:p.name,unit:p.unit,price:p.price,quantity:cart[p.id],subtotal:p.price*cart[p.id]}));
+const total=items.reduce((s,p)=>s+p.subtotal,0);const btn=e.submitter;btn.disabled=true;btn.textContent='অর্ডার জমা হচ্ছে...';
+try{
+ const ref=await addDoc(collection(db,'orders'),{customerName:document.getElementById('customer').value.trim(),phone:document.getElementById('phone').value.trim(),address:document.getElementById('address').value.trim(),area:document.getElementById('area').value,notes:document.getElementById('notes').value.trim(),items,total,paymentMethod:'Cash on Delivery',status:'নতুন',createdAt:serverTimestamp()});
+ document.getElementById('result').innerHTML=`<div class="notice"><strong>অর্ডার সফলভাবে জমা হয়েছে!</strong><br>অর্ডার নম্বর: ${ref.id}<br>মোট: ${money(total)}<br>অর্ডারের নম্বরটি সংরক্ষণ করুন।</div>`;
+ cart={};updateCart();document.getElementById('orderForm').reset();openCart();document.getElementById('result').innerHTML=`<div class="notice"><strong>অর্ডার সফলভাবে জমা হয়েছে!</strong><br>অর্ডার নম্বর: ${ref.id}<br>মোট: ${money(total)}<br>অর্ডারের নম্বরটি সংরক্ষণ করুন।</div>`;
+}catch(err){console.error(err);document.getElementById('result').innerHTML='<div class="notice">অর্ডার জমা হয়নি। ইন্টারনেট ও Firebase সেটিংস পরীক্ষা করুন।</div>';}
+finally{btn.disabled=false;btn.textContent='অর্ডার জমা দিন';}
+});
+render();updateCart();
+</script>
+</body></html>

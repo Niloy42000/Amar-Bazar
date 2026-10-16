@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#16834a"><title>Amar Bazar Admin</title>
+<style>
+body{margin:0;background:#f5f8f5;color:#1c2b21;font-family:system-ui,sans-serif}header{background:#126b3b;color:white;padding:20px}main{max-width:900px;margin:auto;padding:16px}.card{background:white;padding:16px;border-radius:14px;margin:12px 0;box-shadow:0 2px 12px #0000000a}input,button,select{font:inherit;padding:11px;border-radius:9px;border:1px solid #d5e1d8;margin:4px 0}input{width:100%;box-sizing:border-box}button{background:#16834a;color:white;border:0;font-weight:700}button.secondary{background:#e7f3eb;color:#145c34}.order{border:1px solid #e1e9e3;padding:13px;border-radius:12px;margin:12px 0}.meta{color:#64756a;font-size:13px}.status{padding:8px;border-radius:8px;background:#eef8f0}.hidden{display:none}.warn{background:#fff3d9;padding:12px;border-radius:10px;font-size:13px}
+</style></head><body><header><h1>🛒 Amar Bazar — Admin</h1><div>মুন্সীগঞ্জ · অর্ডার পরিচালনা</div></header><main>
+<div class="warn">Firebase config বসানো ও Admin Authentication চালু করার পরই এটি ব্যবহার করুন। নিরাপত্তার জন্য এই পেজের URL গোপন রাখাই যথেষ্ট নয়—Firestore Rules অবশ্যই সেট করতে হবে।</div>
+<section id="login" class="card"><h2>অ্যাডমিন লগইন</h2><input id="email" type="email" placeholder="অ্যাডমিন ইমেইল"><input id="password" type="password" placeholder="পাসওয়ার্ড"><button id="loginBtn">লগইন</button><p id="loginMsg" class="meta"></p></section>
+<section id="panel" class="card hidden"><button id="logoutBtn" class="secondary">লগআউট</button><h2>অর্ডার তালিকা</h2><p class="meta">নতুন অর্ডার সবার আগে দেখানো হবে।</p><div id="orders">অর্ডার লোড হচ্ছে...</div></section>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {getFirestore,collection,query,orderBy,onSnapshot,doc,updateDoc} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+const firebaseConfig={apiKey:"PASTE_YOUR_API_KEY",authDomain:"PASTE_YOUR_PROJECT.firebaseapp.com",projectId:"PASTE_YOUR_PROJECT_ID",storageBucket:"PASTE_YOUR_PROJECT.appspot.com",messagingSenderId:"PASTE_YOUR_SENDER_ID",appId:"PASTE_YOUR_APP_ID"};
+const configured=!Object.values(firebaseConfig).some(v=>v.startsWith("PASTE_"));
+const loginMsg=document.getElementById('loginMsg');
+if(!configured){loginMsg.textContent='প্রথমে index.html এবং admin.html-এ Firebase config বসান।';document.getElementById('loginBtn').disabled=true;}
+else{
+ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+ document.getElementById('loginBtn').onclick=async()=>{loginMsg.textContent='';try{await signInWithEmailAndPassword(auth,document.getElementById('email').value,document.getElementById('password').value)}catch(e){loginMsg.textContent='লগইন হয়নি। ইমেইল/পাসওয়ার্ড এবং Firebase Authentication পরীক্ষা করুন।'}};
+ document.getElementById('logoutBtn').onclick=()=>signOut(auth);
+ onAuthStateChanged(auth,user=>{document.getElementById('login').classList.toggle('hidden',!!user);document.getElementById('panel').classList.toggle('hidden',!user);if(user)loadOrders(db);});
+}
+function loadOrders(db){const box=document.getElementById('orders');const q=query(collection(db,'orders'),orderBy('createdAt','desc'));onSnapshot(q,snap=>{if(snap.empty){box.innerHTML='<p>এখনো কোনো অর্ডার নেই।</p>';return;}box.innerHTML=snap.docs.map(d=>{const o=d.data();const items=(o.items||[]).map(i=>`${i.name} × ${i.quantity} = ৳${i.subtotal}`).join('<br>');return `<article class="order"><strong>অর্ডার: ${d.id}</strong><p class="meta">${o.createdAt?.toDate?.().toLocaleString('bn-BD')||'সময় অপেক্ষমাণ'}</p><p><strong>${esc(o.customerName||'')}</strong> · ${esc(o.phone||'')}</p><p>${esc(o.address||'')} · ${esc(o.area||'')}</p><p>${items}</p><p><strong>মোট: ৳${o.total||0}</strong></p><p class="status">বর্তমান অবস্থা: ${esc(o.status||'নতুন')}</p><select id="s-${d.id}"><option ${o.status==='নতুন'?'selected':''}>নতুন</option><option ${o.status==='গ্রহণ করা হয়েছে'?'selected':''}>গ্রহণ করা হয়েছে</option><option ${o.status==='প্রস্তুত হচ্ছে'?'selected':''}>প্রস্তুত হচ্ছে</option><option ${o.status==='ডেলিভারিতে'?'selected':''}>ডেলিভারিতে</option><option ${o.status==='সম্পন্ন'?'selected':''}>সম্পন্ন</option><option ${o.status==='বাতিল'?'selected':''}>বাতিল</option></select><button onclick="window.updateStatus('${d.id}')">অবস্থা আপডেট</button></article>`}).join('');window.updateStatus=async id=>{const status=document.getElementById('s-'+id).value;try{await updateDoc(doc(db,'orders',id),{status});alert('অর্ডারের অবস্থা আপডেট হয়েছে।')}catch(e){alert('আপডেট হয়নি—Firestore Rules পরীক্ষা করুন।')}};},err=>{box.textContent='অর্ডার লোড হয়নি। Firestore Rules এবং অ্যাডমিন UID পরীক্ষা করুন।';});}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script></main></body></html>
